@@ -1,0 +1,44 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Connection URL for your PostgreSQL database
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Defines a "Podcast" track, which represents the information
+// about a podcast episode in Apple Podcasts.
+model Track {
+  id             Int           @id @default(autoincrement())
+  trackId        Int
+  collectionId   Int
+  trackName      String
+  collectionName String
+  trackViewUrl   String?
+  searches       SearchTrack[]
+}
+
+// A "Search" represents a search term that a user has entered
+// and has triggered a search for tracks.
+//
+// A search can have many tracks associated with it.
+//
+// The goal is to track the search events and the tracks that
+// were returned for that search.
+model Search {
+  id           Int           @id @default(autoincrement())
+  searchTerm   String
+  createdAt    DateTime      @default(now())
+  searchTracks SearchTrack[]
+}
+
+// A many-to-many relationship between the "Search" and "Track" models.
+model SearchTrack {
+  searchId Int
+  trackId  Int
+  search   Search @relation(fields: [searchId], references: [id])
+  track    Track  @relation(fields: [trackId], references: [id])
+
+  @@id([searchId, trackId]) // Composite primary key
+}
